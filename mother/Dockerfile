@@ -8,8 +8,8 @@ COPY scripts/ ./scripts/
 
 # Install Node.js, Python, PHP, shfmt, minify
 RUN apk add --no-cache nodejs npm python3 py3-pip curl tar php shfmt && \
-    # Install Node tools
-    cd scripts && npm init -y && npm install terser luamin && npm cache clean --force && \
+    # Install Node tools in an isolated directory
+    npm init -y && npm install terser luamin && rm package.json package-lock.json && npm cache clean --force && \
     # Install Python tools
     pip install --no-cache-dir --break-system-packages python-minifier && \
     # Install tdewolff/minify
