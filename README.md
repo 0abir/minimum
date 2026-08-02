@@ -28,21 +28,33 @@ The `mother` image will automatically detect and safely optimize:
 
 ## How to use in your Multi-Stage Dockerfile
 
-### Example 1: Node.js Project (Using the Node tag)
+### Example 1: Node.js Project (Installing & Optimizing Dependencies)
 
 ```dockerfile
-# Step 1: Optimize your code
+# Step 1: Install Dependencies & Optimize
 FROM 0abir/minimum:node AS optimizer
-# By default INPUT_DIR is /app/src and OUTPUT_DIR is /app/dist
-COPY ./src /app/src
+WORKDIR /app/src
+
+# Install dependencies (they will be huge at first!)
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Copy the rest of your app code
+COPY . .
+
+# Run the optimizer in-place to minify code AND aggressively prune the node_modules!
+ENV INPUT_DIR=/app/src
+ENV OUTPUT_DIR=/app/src
 RUN /opt/minimum/scripts/optimize.sh
 
-# Step 2: Build your actual image
+# Step 2: Final Production Image
 FROM node:20-alpine
 WORKDIR /app
-# Copy the minified code from the optimizer stage
-COPY --from=optimizer /app/dist ./src
-CMD ["node", "src/index.js"]
+
+# Copy the completely minified app (with the pruned node_modules) over!
+COPY --from=optimizer /app/src /app
+
+CMD ["node", "index.js"]
 ```
 
 ### Example 2: In-Place Optimization (Mother Image)
