@@ -14,10 +14,16 @@ except re.error:
 def process_directory(directory):
     for root, dirs, files in os.walk(directory):
         if ignore_regex:
-            dirs[:] = [d for d in dirs if not ignore_regex.search(os.path.join(root, d))]
+            for d in list(dirs):
+                full_dir = os.path.join(root, d)
+                if ignore_regex.search(full_dir):
+                    print(f"[SKIP] Ignored by pattern: {full_dir}")
+                    dirs.remove(d)
 
         for file in files:
-            if ignore_regex and ignore_regex.search(os.path.join(root, file)):
+            full_path = os.path.join(root, file)
+            if ignore_regex and ignore_regex.search(full_path):
+                print(f"[SKIP] Ignored by pattern: {full_path}")
                 continue
 
             if file.endswith('.py'):

@@ -28,22 +28,30 @@ fi
 
 if command -v minify >/dev/null 2>&1; then
     echo "Running HTML/CSS/JSON/SVG minification..."
-    minify -r --match="\.(html|css|json|svg|xml)$" -o "$TARGET_DIR/" "$TARGET_DIR/" || true
+    minify -v -r --match="\.(html|css|json|svg|xml)$" -o "$TARGET_DIR/" "$TARGET_DIR/" || true
 fi
 
 if command -v php >/dev/null 2>&1; then
     echo "Running PHP minification..."
     find "$TARGET_DIR" -type f -name "*.php" -print0 | while IFS= read -r -d '' file; do
-        php -w "$file" > "$file.tmp" && mv "$file.tmp" "$file"
-        echo "[OK] Minified PHP: $file"
+        if php -w "$file" > "$file.tmp" && mv "$file.tmp" "$file"; then
+            echo "[OK] Minified PHP: $file"
+        else
+            echo "[WARN] Failed to minify PHP: $file"
+            rm -f "$file.tmp"
+        fi
     done
 fi
 
 if command -v shfmt >/dev/null 2>&1; then
     echo "Running Shell minification..."
     find "$TARGET_DIR" -type f -name "*.sh" -print0 | while IFS= read -r -d '' file; do
-        shfmt -mn "$file" > "$file.tmp" && mv "$file.tmp" "$file"
-        echo "[OK] Minified Shell script: $file"
+        if shfmt -mn "$file" > "$file.tmp" && mv "$file.tmp" "$file"; then
+            echo "[OK] Minified Shell script: $file"
+        else
+            echo "[WARN] Failed to minify Shell script: $file"
+            rm -f "$file.tmp"
+        fi
     done
 fi
 
