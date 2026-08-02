@@ -20,6 +20,12 @@ The `mother` image will automatically detect and safely optimize:
 - **Lua**: (`.lua`) via `luamin`.
 - **Shell Scripts**: (`.sh`) via `shfmt`.
 
+## ✨ Powerful Features
+
+- **Aggressive Node Pruning**: If your `$TARGET_DIR` contains a `node_modules` folder, the optimizer will automatically strip out all unnecessary bloat from your dependencies (e.g., Markdown files, Licenses, Source Maps, TypeScript definitions, and entire `test`, `docs`, and `.github` folders) to drastically reduce your final image size.
+- **Isolated Internals**: The minification tools (like Terser) are installed in a hidden internal folder, and their `package.json` is completely deleted. This guarantees zero conflict if you run `npm` commands inside the container.
+- **Detailed Logging**: Every action is clearly logged (`[OK] Minified`, `[SKIP] Already minified`, `[SKIP] Ignored by pattern`, `[WARN] Failed`) so you always have perfect transparency in your CI/CD pipeline.
+
 ## How to use in your Multi-Stage Dockerfile
 
 ### Example 1: Node.js Project (Using the Node tag)
@@ -68,7 +74,8 @@ To automatically publish these images to your Docker Hub account:
 1. Go to your GitHub repository **Settings** > **Secrets and variables** > **Actions**.
 2. Add a `DOCKERHUB_USERNAME` secret.
 3. Add a `DOCKERHUB_TOKEN` secret (Ensure the access token has **Read & Write** scopes).
-4. Push your code to the `main` branch.
+4. Go to the **Actions** tab in your repository.
+5. Select the **Publish Docker Images** workflow and click **Run workflow**.
 
 ## Building the Images Locally
 
