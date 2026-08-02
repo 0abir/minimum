@@ -12,6 +12,7 @@ async function processDirectory(dir) {
         const fullPath = path.join(dir, item);
 
         if (ignorePattern.test(fullPath)) {
+            console.log(`[SKIP] Ignored by pattern: ${fullPath}`);
             continue;
         }
 
@@ -22,6 +23,7 @@ async function processDirectory(dir) {
         } else if (stat.isFile()) {
             if (item.endsWith('.js') || item.endsWith('.mjs') || item.endsWith('.cjs')) {
                 if (item.includes('.min.')) {
+                    console.log(`[SKIP] Already minified: ${fullPath}`);
                     continue;
                 }
 
