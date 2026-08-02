@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:24-alpine
 
 ENV INPUT_DIR=/app/src
 ENV OUTPUT_DIR=/app/dist
