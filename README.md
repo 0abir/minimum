@@ -6,9 +6,9 @@ A super lightweight, multi-stage Docker image suite designed to minify, optimize
 
 This project provides Docker images that can be used directly in your multi-stage builds to automatically minify your code.
 
-- **Mother Image (`myusername/minimum:latest`)**: Auto-detects project languages. Includes tools for Node.js, Python, HTML, CSS, JSON, SVG, XML.
-- **Node Tag (`myusername/minimum:node`)**: A hyper-lightweight Alpine image dedicated solely to JavaScript minification using Terser.
-- **Python Tag (`myusername/minimum:python`)**: A lightweight image dedicated to Python minification.
+- **Mother Image (`0abir/minimum:latest`)**: Auto-detects project languages. Includes tools for Node.js, Python, HTML, CSS, JSON, SVG, XML.
+- **Node Tag (`0abir/minimum:node`)**: A hyper-lightweight Alpine image dedicated solely to JavaScript minification using Terser.
+- **Python Tag (`0abir/minimum:python`)**: A lightweight image dedicated to Python minification.
 
 ## How to use in your Multi-Stage Dockerfile
 
@@ -16,7 +16,7 @@ This project provides Docker images that can be used directly in your multi-stag
 
 ```dockerfile
 # Step 1: Optimize your code
-FROM myusername/minimum:node AS optimizer
+FROM 0abir/minimum:node AS optimizer
 # By default INPUT_DIR is /app/src and OUTPUT_DIR is /app/dist
 COPY ./src /app/src
 RUN /opt/minimum/scripts/optimize.sh
@@ -32,7 +32,7 @@ CMD ["node", "src/index.js"]
 ### Example 2: In-Place Optimization (Mother Image)
 
 ```dockerfile
-FROM myusername/minimum:latest AS optimizer
+FROM 0abir/minimum:latest AS optimizer
 COPY . /app/src
 ENV INPUT_DIR=/app/src
 ENV OUTPUT_DIR=/app/src
