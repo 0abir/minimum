@@ -19,6 +19,18 @@ export TARGET_DIR="$OUTPUT_DIR"
 if command -v node >/dev/null 2>&1; then
     echo "Running Node/Lua minification..."
     node /opt/minimum/scripts/minify-node.js
+    
+    if [ -d "$TARGET_DIR/node_modules" ]; then
+        echo "Aggressively pruning node_modules..."
+        find "$TARGET_DIR/node_modules" -type f \( \
+              -iname "*.md" -o -iname "*.markdown" -o -iname "license*" \
+              -o -iname "*.map" -o -iname "*.ts" \
+            \) -delete \
+         && find "$TARGET_DIR/node_modules" -type d \( \
+              -iname "test" -o -iname "tests" -o -iname "__tests__" \
+              -o -iname ".github" -o -iname "docs" -o -iname "example*" \
+            \) -prune -exec rm -rf {} + || true
+    fi
 fi
 
 if command -v python3 >/dev/null 2>&1; then
