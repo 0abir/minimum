@@ -7,8 +7,7 @@ WORKDIR /opt/minimum
 COPY scripts/ ./scripts/
 
 # Install Node.js, Python, PHP, shfmt, minify
-RUN apk add --no-cache nodejs npm python3 py3-pip curl tar php82 shfmt && \
-    ln -s /usr/bin/php82 /usr/bin/php && \
+RUN apk add --no-cache nodejs npm python3 py3-pip curl tar php shfmt && \
     # Install Node tools
     cd scripts && npm init -y && npm install terser luamin && npm cache clean --force && \
     # Install Python tools
