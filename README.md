@@ -26,6 +26,15 @@ The `mother` image will automatically detect and safely optimize:
 - **Isolated Internals**: The minification tools (like Terser) are installed in a hidden internal folder, and their `package.json` is completely deleted. This guarantees zero conflict if you run `npm` commands inside the container.
 - **Detailed Logging**: Every action is clearly logged (`[OK] Minified`, `[SKIP] Already minified`, `[SKIP] Ignored by pattern`, `[WARN] Failed`) so you always have perfect transparency in your CI/CD pipeline.
 
+## The `node_modules` Lifecycle
+
+The optimizer **does not** run `npm install` for you. Here is exactly how you handle dependencies:
+1. **You install them:** You run `RUN npm install` in your Dockerfile (usually inside `/app/src`).
+2. **The Optimizer prunes them:** When our script runs, it minifies your code AND aggressively prunes your `node_modules` folder to make it tiny.
+3. **You copy them out:** You use `COPY --from=optimizer` to pull the pruned `node_modules` safely into your final production image.
+
+---
+
 ## How to use in your Multi-Stage Dockerfile
 
 ### Example 1: Node.js Project (Installing & Optimizing Dependencies)
@@ -57,7 +66,31 @@ COPY --from=optimizer /app/src /app
 CMD ["node", "index.js"]
 ```
 
-### Example 2: In-Place Optimization (Mother Image)
+### Example 2: Pulling out `node_modules` and `src` Separately
+
+If you want granular control over exactly what goes into your final image, you can pull specific folders out of the optimizer independently:
+
+```dockerfile
+# ... (optimizer step happens above) ...
+
+# Step 2: Final Production Image
+FROM node:20-alpine
+WORKDIR /app
+
+# 1. Pull out ONLY the aggressively pruned node_modules
+COPY --from=optimizer /app/src/node_modules ./node_modules
+
+# 2. Pull out ONLY your minified source folder
+COPY --from=optimizer /app/src/src ./src
+
+# 3. Pull out specific files
+COPY --from=optimizer /app/src/package.json ./
+COPY --from=optimizer /app/src/index.js ./
+
+CMD ["node", "index.js"]
+```
+
+### Example 3: In-Place Optimization (Mother Image)
 
 ```dockerfile
 FROM 0abir/minimum:latest AS optimizer
@@ -77,11 +110,11 @@ Customize the minification process by setting these environment variables before
 
 - `INPUT_DIR`: The directory containing your source code (default: `/app/src`).
 - `OUTPUT_DIR`: The directory where optimized code will be placed (default: `/app/dist`). If `INPUT_DIR` matches `OUTPUT_DIR`, files are optimized in-place (which also correctly preserves hidden files like `.env`).
-- `IGNORE_PATTERN`: A regex string to ignore specific folders or files (default: `node_modules|\.git`).
+- `IGNORE_PATTERN`: A regex string to ignore specific folders or files (default: `node_modules|\.git`). *(Note: The aggressive pruning script explicitly targets `node_modules` independently, but the JS minifier ignores it so it doesn't waste time trying to minify third-party code).*
 
 ## Automated Publishing (GitHub Actions)
 
-This repository is equipped with a GitHub Action workflow (`.github/workflows/docker-publish.yml`). 
+This repository is equipped with a manual GitHub Action workflow (`.github/workflows/docker-publish.yml`). 
 To automatically publish these images to your Docker Hub account:
 1. Go to your GitHub repository **Settings** > **Secrets and variables** > **Actions**.
 2. Add a `DOCKERHUB_USERNAME` secret.
