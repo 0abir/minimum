@@ -11,6 +11,7 @@ echo "OUTPUT_DIR: $OUTPUT_DIR"
 if [ "$INPUT_DIR" != "$OUTPUT_DIR" ]; then
     echo "Copying files from $INPUT_DIR to $OUTPUT_DIR..."
     mkdir -p "$OUTPUT_DIR"
+    # Use /. to copy hidden files properly
     cp -a "$INPUT_DIR"/. "$OUTPUT_DIR"/ || true
 fi
 
