@@ -4,11 +4,21 @@ A super lightweight, multi-stage Docker image suite designed to minify, optimize
 
 ## Overview
 
-This project provides Docker images that can be used directly in your multi-stage builds to automatically minify your code.
+This project provides Docker images that can be used directly in your multi-stage builds to automatically minify your code. The architecture is completely isolated to ensure Docker build contexts remain tiny and optimized.
 
-- **Mother Image (`0abir/minimum:latest`)**: Auto-detects project languages. Includes tools for Node.js, Python, HTML, CSS, JSON, SVG, XML.
+- **Mother Image (`0abir/minimum:latest`)**: Auto-detects project languages. Includes tools for Node.js, Python, HTML, CSS, JSON, SVG, XML, PHP, Lua, and Shell scripts.
 - **Node Tag (`0abir/minimum:node`)**: A hyper-lightweight Alpine image dedicated solely to JavaScript minification using Terser.
-- **Python Tag (`0abir/minimum:python`)**: A lightweight image dedicated to Python minification.
+- **Python Tag (`0abir/minimum:python`)**: A lightweight image dedicated strictly to Python minification.
+
+## Supported Languages
+
+The `mother` image will automatically detect and safely optimize:
+- **Node.js / JavaScript**: (`.js`, `.mjs`, `.cjs`) safely via Terser (skips already `.min.` files).
+- **Python**: (`.py`) via `python-minifier`.
+- **Web Assets**: (`.html`, `.css`, `.json`, `.svg`, `.xml`) via `tdewolff/minify`.
+- **PHP**: (`.php`) via PHP's native whitespace/comment stripper.
+- **Lua**: (`.lua`) via `luamin`.
+- **Shell Scripts**: (`.sh`) via `shfmt`.
 
 ## How to use in your Multi-Stage Dockerfile
 
@@ -45,19 +55,25 @@ COPY --from=optimizer /app/src /usr/share/nginx/html
 
 ## Environment Variables
 
-You can customize the minification process by setting these environment variables before running the optimizer:
+Customize the minification process by setting these environment variables before running the optimizer step:
 
 - `INPUT_DIR`: The directory containing your source code (default: `/app/src`).
-- `OUTPUT_DIR`: The directory where optimized code will be placed (default: `/app/dist`). If `INPUT_DIR` matches `OUTPUT_DIR`, files are optimized in-place.
-- `LANGUAGE`: Force a specific language pipeline (`node`, `python`, `auto`, `mother`). (default: `auto`).
+- `OUTPUT_DIR`: The directory where optimized code will be placed (default: `/app/dist`). If `INPUT_DIR` matches `OUTPUT_DIR`, files are optimized in-place (which also correctly preserves hidden files like `.env`).
 - `IGNORE_PATTERN`: A regex string to ignore specific folders or files (default: `node_modules|\.git`).
 
-## Building the Images
+## Automated Publishing (GitHub Actions)
 
-Run the included build script to build the images locally:
+This repository is equipped with a GitHub Action workflow (`.github/workflows/docker-publish.yml`). 
+To automatically publish these images to your Docker Hub account:
+1. Go to your GitHub repository **Settings** > **Secrets and variables** > **Actions**.
+2. Add a `DOCKERHUB_USERNAME` secret.
+3. Add a `DOCKERHUB_TOKEN` secret (Ensure the access token has **Read & Write** scopes).
+4. Push your code to the `main` branch.
+
+## Building the Images Locally
+
+Run the included bash script to build all the images on your local machine:
 
 ```bash
 ./build.sh your_dockerhub_username
 ```
-
-This will build `your_dockerhub_username/minimum:latest`, `:node`, and `:python`.
